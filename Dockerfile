@@ -1,16 +1,11 @@
-# Run with:
-#    podman run -it --publish 8080:8080 --volume kanban.db:kanban.db <image-id>
-#
-FROM ubuntu:24.04
+FROM python:3.8-alpine as base
+FROM base as builder
 
-RUN apt update -y && \
-    apt install python3 python3-waitress python3-flask python3-flask-sqlalchemy \
-      --no-install-recommends -y && \
-    apt clean
 WORKDIR /python-kanban
 
-copy *.py .
-copy static ./static
-EXPOSE 8080
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-CMD waitress-serve --call 'main:create_app'
+COPY . .
+
+CMD ["waitress-serve", "--call", "main:create_app"]
